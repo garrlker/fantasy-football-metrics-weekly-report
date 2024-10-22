@@ -371,6 +371,7 @@ class PdfGenerator(object):
             ("BOX", (0, 0), (-1, -1), 0.5, colors.black),
             ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.black),
             ("VALIGN", (0, 0), (-1, 0), "MIDDLE"),
+            ("ROWBACKGROUNDS", (0, 0), (-1, -1), [colors.white, colors.whitesmoke]),  # alternate row colors
             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey)
         ]
 
@@ -435,7 +436,7 @@ class PdfGenerator(object):
         self.scores_headers = [["Place", "Team", "Manager", "Points", "Season Avg. (Place)"]]
         self.efficiency_headers = [["Place", "Team", "Manager", "Coaching Efficiency (%)", "Season Avg. (Place)"]]
         self.luck_headers = [["Place", "Team", "Manager", "Luck", "Season Avg. (Place)", "Weekly Record (W-L)"]]
-        self.optimal_scores_headers = [["Place", "Team", "Manager", "Optimal Points", "Season Total"]]
+        self.optimal_scores_headers = [["Place", "Team", "Manager", "Optimal Points", "Season Total (Place)"]]
         self.bad_boy_headers = [["Place", "Team", "Manager", "Bad Boy Pts", "Worst Offense", "# Offenders"]]
         self.beef_headers = [["Place", "Team", "Manager", "TABBU(s)"]]
         self.high_roller_headers = [[
@@ -679,8 +680,8 @@ class PdfGenerator(object):
                 toc_section_key,
                 color=(
                     "green" if self.break_ties and (
-                        title == "Team Score Rankings"
-                        or title == "Team Coaching Efficiency Rankings"
+                        title_text == "Team Score Rankings"
+                        or title_text == "Team Coaching Efficiency Rankings"
                     ) else None
                 )
             )
@@ -959,7 +960,7 @@ class PdfGenerator(object):
 
         # reduce manager string max characters for standings metric to accommodate narrower column widths
         manager_header_ndx = None
-        if metric_type == "standings":
+        if metric_type == "standings" or metric_type == "playoffs":
             for header_ndx, header in enumerate(col_headers[0]):
                 if header == "Manager":
                     manager_header_ndx = header_ndx
@@ -969,13 +970,21 @@ class PdfGenerator(object):
             for cell_ndx, cell in enumerate(row):
                 if isinstance(cell, str):
                     if cell_ndx not in sesqui_max_chars_col_ndxs:
-                        # truncate data cell contents to specified max characters and half of specified max characters if
-                        # cell is a team manager header
+                        # truncate data cell contents to specified max characters and half of specified max characters
+                        # if cell is a team manager header
                         display_row.append(
-                            truncate_cell_for_display(cell, halve_max_chars=(cell_ndx == manager_header_ndx))
+                            truncate_cell_for_display(
+                                cell,
+                                max_chars=settings.report_settings.max_data_chars,
+                                halve_max_chars=(cell_ndx == manager_header_ndx)
+                            )
                         )
                     else:
-                        display_row.append(truncate_cell_for_display(cell, sesqui_max_chars=True))
+                        display_row.append(
+                            truncate_cell_for_display(
+                                cell, max_chars=settings.report_settings.max_data_chars, sesqui_max_chars=True
+                            )
+                        )
 
                 else:
                     display_row.append(cell)
@@ -1004,7 +1013,7 @@ class PdfGenerator(object):
         display_series_names = []
         for name in series_names:
             # truncate series name to specified max characters
-            display_series_names.append(truncate_cell_for_display(str(name)))
+            display_series_names.append(truncate_cell_for_display(str(name), settings.report_settings.max_data_chars))
 
         series_names = display_series_names
 
@@ -2056,7 +2065,7 @@ class TableOfContents(object):
 
         if truncate_title:
             title = (
-                f"{truncate_cell_for_display(title, sesqui_max_chars=True)}"
+                f"{truncate_cell_for_display(title, settings.report_settings.max_data_chars, sesqui_max_chars=True)}"
                 f"{f' (Part {team_page})' if team_page else ''}"
             )
 
