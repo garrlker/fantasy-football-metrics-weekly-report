@@ -151,10 +151,24 @@
     },
     "IDP_FLEX": {
       "base": "FLEX_IDP",
-      "positions": [
-        "DB",
+        "positions": [
+          "DL",
+          "LB",
+          "DB"
+        ]
+    },
+    "DE": {
+      "base": "FLEX_DL",
+       "positions": [
         "DL",
-        "LB"
+        "DT"
+       ]
+    },
+    "CB": {
+      "base": "FLEX_DB",
+      "positions": [
+        "CB",
+        "S"
       ]
     }
   },

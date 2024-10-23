@@ -151,6 +151,7 @@ class BaseLeagueData(ABC):
         return unmapped_base_positions | unmapped_idp_positions | mapped_platform_positions
 
     def get_mapped_position(self, platform_position: str) -> str:
+        # logger.info(f"position: {platform_position}")
         return self.position_mapping.get(platform_position).get("base")
 
     @abstractmethod

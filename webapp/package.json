@@ -13,5 +13,8 @@
     "nuxt": "^3.13.2",
     "vue": "latest",
     "vue-router": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.11"
   }
 }
